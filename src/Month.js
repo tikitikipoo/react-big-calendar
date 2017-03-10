@@ -71,6 +71,8 @@ let propTypes = {
       y: React.PropTypes.number
     })
   ]),
+
+  dayPropGetter: React.PropTypes.func,
 };
 
 let MonthView = React.createClass({
@@ -159,7 +161,9 @@ let MonthView = React.createClass({
       allDayAccessor,
       eventPropGetter,
       messages,
-      selected } = this.props;
+      selected,
+      dayPropGetter,
+    } = this.props;
 
     const { needLimitMeasure, rowLimit } = this.state;
 
@@ -197,6 +201,8 @@ let MonthView = React.createClass({
         eventComponent={components.event}
         eventWrapperComponent={components.eventWrapper}
         dateCellWrapper={components.dateCellWrapper}
+
+        dayPropGetter={dayPropGetter}
       />
     )
   },

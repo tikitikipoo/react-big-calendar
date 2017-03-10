@@ -59,6 +59,8 @@ export default class TimeGrid extends Component {
 
     messages: React.PropTypes.object,
     components: React.PropTypes.object.isRequired,
+
+    dayPropGetter: React.PropTypes.func,
   }
 
   static defaultProps = {
@@ -195,7 +197,7 @@ export default class TimeGrid extends Component {
   }
 
   renderEvents(range, events, today){
-    let { min, max, endAccessor, startAccessor, components } = this.props;
+    let { min, max, endAccessor, startAccessor, components, dayPropGetter } = this.props;
 
     return range.map((date, idx) => {
       let daysEvents = events.filter(
@@ -217,6 +219,7 @@ export default class TimeGrid extends Component {
           key={idx}
           date={date}
           events={daysEvents}
+          dayPropGetter={dayPropGetter}
         />
       )
     })
@@ -272,6 +275,7 @@ export default class TimeGrid extends Component {
             eventPropGetter={this.props.eventPropGetter}
             selected={this.props.selected}
             onSelect={this.handleSelectEvent}
+            dayPropGetter={this.props.dayPropGetter}
           />
         </div>
       </div>
@@ -279,12 +283,24 @@ export default class TimeGrid extends Component {
   }
 
   renderHeaderCells(range){
-    let { dayFormat, culture, components, getDrilldownView } = this.props;
+    let { dayFormat, culture, components, getDrilldownView, dayPropGetter } = this.props;
     let HeaderComponent = components.header || Header
 
     return range.map((date, i) => {
       let drilldownView = getDrilldownView(date);
       let label = localizer.format(date, dayFormat, culture);
+
+      let dStyle = undefined
+      let dClassName = undefined
+
+      if (dayPropGetter) {
+        const dayProps = dayPropGetter(date, dates.isToday(date));
+        if (dayProps && dayProps.style)
+          dStyle = dayProps.style;
+
+        if (dayProps && dayProps.className)
+          dClassName = dayProps.className;
+      }
 
       let header = (
         <HeaderComponent
@@ -295,15 +311,18 @@ export default class TimeGrid extends Component {
           culture={culture}
         />
       )
-
       return (
         <div
           key={i}
           className={cn(
             'rbc-header',
+            dClassName,
             dates.isToday(date) && 'rbc-today',
           )}
-          style={segStyle(1, this.slots)}
+          style={{
+            ...dStyle,
+            ...segStyle(1, this.slots)
+          }}
         >
           {drilldownView ? (
             <a
